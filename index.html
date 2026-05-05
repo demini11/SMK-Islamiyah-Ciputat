@@ -71,10 +71,6 @@
         .card-hover:hover { transform: translateY(-4px); box-shadow: 0 16px 32px rgba(59,130,246,0.12); border-color: rgba(59,130,246,0.3); }
         @media (hover: none) { .card-hover:hover { transform: none; box-shadow: none; } }
 
-        .jurusan-card { position: relative; overflow: hidden; }
-        .jurusan-card::before { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background:linear-gradient(90deg,transparent,rgba(59,130,246,0.05),transparent); transition:left 0.6s; }
-        .jurusan-card:hover::before { left: 100%; }
-
         .toast { position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(60px); opacity:0; padding:14px 24px; background:rgba(16,185,129,0.95); color:#fff; border-radius:12px; backdrop-filter:blur(10px); transition:all 0.4s cubic-bezier(0.16,1,0.3,1); z-index:9999; font-size:13px; font-weight:500; text-align:center; max-width:90vw; box-shadow:0 10px 30px rgba(16,185,129,0.3); }
         .toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
 
@@ -97,7 +93,6 @@
         .drawer-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:65; opacity:0; pointer-events:none; transition:opacity 0.3s; }
         .drawer-overlay.open { opacity:1; pointer-events:auto; }
 
-        .mobile-table { }
         .mobile-table thead { display: none; }
         .mobile-table tbody tr { display: block; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .mobile-table tbody td { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
@@ -110,10 +105,21 @@
         }
 
         .img-portrait { aspect-ratio: 3/4; }
+
+        /* Guru card */
+        .guru-card { position: relative; overflow: hidden; }
+        .guru-card .guru-overlay {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: linear-gradient(to top, rgba(5,5,16,0.95) 0%, rgba(5,5,16,0.6) 60%, transparent 100%);
+            padding: 40px 12px 12px;
+        }
+        .guru-card:hover .guru-img { transform: scale(1.05); }
+        .guru-img { transition: transform 0.5s ease; }
     </style>
 </head>
 <body class="font-inter">
 
+    <!-- NAVBAR -->
     <nav class="nav-glass fixed top-0 left-0 w-full z-50 h-14 flex items-center">
         <div class="max-w-7xl mx-auto w-full px-4 flex items-center justify-between">
             <a href="#" class="flex items-center gap-2.5" onclick="switchTab('beranda')">
@@ -139,19 +145,16 @@
         </div>
     </nav>
 
+    <!-- DRAWER -->
     <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
     <div class="mobile-drawer" id="mobileDrawer">
         <div class="p-5 pt-6">
             <div class="flex items-center justify-between mb-8">
                 <div class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center">
-                        <iconify-icon icon="lucide:graduation-cap" width="18" class="text-white"></iconify-icon>
-                    </div>
+                    <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center"><iconify-icon icon="lucide:graduation-cap" width="18" class="text-white"></iconify-icon></div>
                     <span class="text-sm font-bold">SMK Islamiyah</span>
                 </div>
-                <button class="w-8 h-8 rounded-lg border border-white/10 flex items-center justify-center" onclick="closeDrawer()">
-                    <iconify-icon icon="lucide:x" width="16" class="text-white"></iconify-icon>
-                </button>
+                <button class="w-8 h-8 rounded-lg border border-white/10 flex items-center justify-center" onclick="closeDrawer()"><iconify-icon icon="lucide:x" width="16" class="text-white"></iconify-icon></button>
             </div>
             <div class="space-y-1">
                 <button class="drawer-tab w-full text-left px-4 py-3.5 text-sm font-medium text-neutral-300 hover:text-blue-400 hover:bg-white/5 rounded-xl flex items-center gap-3 transition-colors" data-tab="beranda"><iconify-icon icon="lucide:home" width="18" class="text-neutral-500"></iconify-icon>Beranda</button>
@@ -169,6 +172,7 @@
         </div>
     </div>
 
+    <!-- BOTTOM NAV -->
     <div class="bottom-nav fixed bottom-0 left-0 w-full z-50 bg-[#080818]/95 backdrop-blur-xl border-t border-white/5 px-2 py-1.5 justify-around items-center">
         <button class="bottom-tab flex flex-col items-center gap-0.5 py-1.5 px-3 rounded-xl transition-colors active" data-tab="beranda"><iconify-icon icon="lucide:home" width="20" class="tab-icon text-blue-400"></iconify-icon><span class="text-[9px] font-semibold tab-label text-blue-400">Beranda</span></button>
         <button class="bottom-tab flex flex-col items-center gap-0.5 py-1.5 px-3 rounded-xl transition-colors" data-tab="jurusan"><iconify-icon icon="lucide:book-open" width="20" class="tab-icon text-neutral-500"></iconify-icon><span class="text-[9px] font-semibold tab-label text-neutral-500">Jurusan</span></button>
@@ -206,21 +210,24 @@
             </div>
         </section>
 
+        <!-- Sub tabs Beranda -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3">
             <div class="sub-scroll border-b border-white/5 pb-3">
                 <button class="sub-btn active px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="profil" data-parent="beranda">Profil</button>
+                <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="guru" data-parent="beranda">Guru</button>
                 <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="sambutan" data-parent="beranda">Sambutan</button>
                 <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="visimisi" data-parent="beranda">Visi & Misi</button>
                 <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="sejarah" data-parent="beranda">Sejarah</button>
             </div>
         </div>
 
+        <!-- Profil -->
         <div class="sub-content active" id="sub-beranda-profil">
             <section class="py-10 sm:py-16"><div class="max-w-7xl mx-auto px-4 sm:px-6">
                 <span class="text-[10px] font-bold tracking-[0.2em] text-blue-400 uppercase mb-3 block">Tentang Kami</span>
                 <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-6">Profil <span class="text-blue-400">SMK Islamiyah Ciputat</span></h2>
                 <div class="rounded-2xl overflow-hidden border border-white/5 mb-6 max-w-sm mx-auto sm:mx-0">
-                    <img src="Loggo.jpeg" alt="Gedung Sekolah" class="w-full h-auto object-cover img-portrait">
+                    <img src="https://picsum.photos/seed/smkschool2024/600/800.jpg" alt="Gedung Sekolah" class="w-full h-auto object-cover img-portrait">
                 </div>
                 <p class="text-neutral-400 font-light text-sm leading-relaxed mb-4">SMK Islamiyah Ciputat merupakan sekolah menengah kejuruan swasta yang berlokasi di Jl. Ir. H. Juanda No. 1, Ciputat, Tangerang Selatan. Didirikan oleh Yayasan Pendidikan Islam Islamiyah Ciputat sejak tahun 1978.</p>
                 <p class="text-neutral-400 font-light text-sm leading-relaxed mb-6">Dengan akreditasi <strong class="text-blue-400">A</strong> dari BAN-S/M, sekolah menyelenggarakan pendidikan kejuruan yang mengintegrasikan nilai-nilai islami dalam seluruh aspek pembelajaran.</p>
@@ -233,6 +240,147 @@
             </div></section>
         </div>
 
+        <!-- ==================== GURU (BARU) ==================== -->
+        <div class="sub-content" id="sub-beranda-guru">
+            <section class="py-10 sm:py-16"><div class="max-w-7xl mx-auto px-4 sm:px-6">
+                <span class="text-[10px] font-bold tracking-[0.2em] text-blue-400 uppercase mb-3 block">Tenaga Pendidik</span>
+                <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-2">Guru <span class="text-blue-400">Unggulan</span></h2>
+                <p class="text-neutral-400 font-light text-sm leading-relaxed mb-8 max-w-lg">Profesional, berpengalaman, dan berdedikasi tinggi dalam mendidik generasi muda.</p>
+
+                <!-- Grid 9 Guru -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+
+                    <!-- Guru 1 -->
+                    <div class="guru-card rounded-2xl overflow-hidden border border-white/5 card-hover">
+                        <div class="img-portrait overflow-hidden">
+                            <img src="https://picsum.photos/seed/teacher01/400/533.jpg" alt="H. Ahmad Suryana" class="w-full h-full object-cover guru-img">
+                        </div>
+                        <div class="guru-overlay">
+                            <div class="text-[9px] font-bold text-blue-400 tracking-widest uppercase mb-0.5">Kepala Sekolah</div>
+                            <div class="text-xs font-bold leading-tight">H. Ahmad Suryana, S.Pd., M.M.</div>
+                        </div>
+                    </div>
+
+                    <!-- Guru 2 -->
+                    <div class="guru-card rounded-2xl overflow-hidden border border-white/5 card-hover">
+                        <div class="img-portrait overflow-hidden">
+                            <img src="https://picsum.photos/seed/teacher02/400/533.jpg" alt="Dra. Siti Aminah" class="w-full h-full object-cover guru-img">
+                        </div>
+                        <div class="guru-overlay">
+                            <div class="text-[9px] font-bold text-emerald-400 tracking-widest uppercase mb-0.5">Wakil Kepala Sekolah</div>
+                            <div class="text-xs font-bold leading-tight">Dra. Siti Aminah, M.Pd.</div>
+                        </div>
+                    </div>
+
+                    <!-- Guru 3 -->
+                    <div class="guru-card rounded-2xl overflow-hidden border border-white/5 card-hover">
+                        <div class="img-portrait overflow-hidden">
+                            <img src="https://picsum.photos/seed/teacher03/400/533.jpg" alt="Budi Santoso" class="w-full h-full object-cover guru-img">
+                        </div>
+                        <div class="guru-overlay">
+                            <div class="text-[9px] font-bold text-blue-400 tracking-widest uppercase mb-0.5">TKJ</div>
+                            <div class="text-xs font-bold leading-tight">Budi Santoso, S.Kom., M.T.</div>
+                        </div>
+                    </div>
+
+                    <!-- Guru 4 -->
+                    <div class="guru-card rounded-2xl overflow-hidden border border-white/5 card-hover">
+                        <div class="img-portrait overflow-hidden">
+                            <img src="https://picsum.photos/seed/teacher04/400/533.jpg" alt="Rina Kartika" class="w-full h-full object-cover guru-img">
+                        </div>
+                        <div class="guru-overlay">
+                            <div class="text-[9px] font-bold text-purple-400 tracking-widest uppercase mb-0.5">DKV</div>
+                            <div class="text-xs font-bold leading-tight">Rina Kartika, S.Ds., M.Ds.</div>
+                        </div>
+                    </div>
+
+                    <!-- Guru 5 -->
+                    <div class="guru-card rounded-2xl overflow-hidden border border-white/5 card-hover">
+                        <div class="img-portrait overflow-hidden">
+                            <img src="https://picsum.photos/seed/teacher05/400/533.jpg" alt="Chef Hendra" class="w-full h-full object-cover guru-img">
+                        </div>
+                        <div class="guru-overlay">
+                            <div class="text-[9px] font-bold text-orange-400 tracking-widest uppercase mb-0.5">BOGA</div>
+                            <div class="text-xs font-bold leading-tight">Hendra Wijaya, S.Pd., Chef.</div>
+                        </div>
+                    </div>
+
+                    <!-- Guru 6 -->
+                    <div class="guru-card rounded-2xl overflow-hidden border border-white/5 card-hover">
+                        <div class="img-portrait overflow-hidden">
+                            <img src="https://picsum.photos/seed/teacher06/400/533.jpg" alt="Nurul Hidayah" class="w-full h-full object-cover guru-img">
+                        </div>
+                        <div class="guru-overlay">
+                            <div class="text-[9px] font-bold text-emerald-400 tracking-widest uppercase mb-0.5">AKL</div>
+                            <div class="text-xs font-bold leading-tight">Nurul Hidayah, S.E., M.Ak.</div>
+                        </div>
+                    </div>
+
+                    <!-- Guru 7 -->
+                    <div class="guru-card rounded-2xl overflow-hidden border border-white/5 card-hover">
+                        <div class="img-portrait overflow-hidden">
+                            <img src="https://picsum.photos/seed/teacher07/400/533.jpg" alt="Fajar Ramadhan" class="w-full h-full object-cover guru-img">
+                        </div>
+                        <div class="guru-overlay">
+                            <div class="text-[9px] font-bold text-cyan-400 tracking-widest uppercase mb-0.5">BDP</div>
+                            <div class="text-xs font-bold leading-tight">Fajar Ramadhan, S.M., M.M.</div>
+                        </div>
+                    </div>
+
+                    <!-- Guru 8 -->
+                    <div class="guru-card rounded-2xl overflow-hidden border border-white/5 card-hover">
+                        <div class="img-portrait overflow-hidden">
+                            <img src="https://picsum.photos/seed/teacher08/400/533.jpg" alt="Dewi Lestari" class="w-full h-full object-cover guru-img">
+                        </div>
+                        <div class="guru-overlay">
+                            <div class="text-[9px] font-bold text-rose-400 tracking-widest uppercase mb-0.5">OTKP</div>
+                            <div class="text-xs font-bold leading-tight">Dewi Lestari, S.Pd., M.Pd.</div>
+                        </div>
+                    </div>
+
+                    <!-- Guru 9 -->
+                    <div class="guru-card rounded-2xl overflow-hidden border border-white/5 card-hover">
+                        <div class="img-portrait overflow-hidden">
+                            <img src="https://picsum.photos/seed/teacher09/400/533.jpg" alt="Ustadz Hamzah" class="w-full h-full object-cover guru-img">
+                        </div>
+                        <div class="guru-overlay">
+                            <div class="text-[9px] font-bold text-yellow-400 tracking-widest uppercase mb-0.5">Guru PAI</div>
+                            <div class="text-xs font-bold leading-tight">Ustadz Hamzah, Lc., M.H.I.</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Info tambahan -->
+                <div class="mt-8 p-5 rounded-2xl bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/10">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                            <iconify-icon icon="lucide:users" width="20" class="text-blue-400"></iconify-icon>
+                        </div>
+                        <div>
+                            <div class="text-sm font-bold">Total Tenaga Pendidik</div>
+                            <div class="text-[10px] text-neutral-500">Guru & Staff Pengajar</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="text-center p-3 rounded-xl bg-white/[0.03] border border-white/5">
+                            <div class="text-lg font-black text-blue-400">68</div>
+                            <div class="text-[9px] text-neutral-500 font-semibold tracking-wider uppercase">Guru</div>
+                        </div>
+                        <div class="text-center p-3 rounded-xl bg-white/[0.03] border border-white/5">
+                            <div class="text-lg font-black text-blue-400">42</div>
+                            <div class="text-[9px] text-neutral-500 font-semibold tracking-wider uppercase">S2</div>
+                        </div>
+                        <div class="text-center p-3 rounded-xl bg-white/[0.03] border border-white/5">
+                            <div class="text-lg font-black text-blue-400">15</div>
+                            <div class="text-[9px] text-neutral-500 font-semibold tracking-wider uppercase">Sertifikasi</div>
+                        </div>
+                    </div>
+                </div>
+            </div></section>
+        </div>
+
+        <!-- Sambutan -->
         <div class="sub-content" id="sub-beranda-sambutan">
             <section class="py-10 sm:py-16"><div class="max-w-7xl mx-auto px-4 sm:px-6">
                 <span class="text-[10px] font-bold tracking-[0.2em] text-blue-400 uppercase mb-3 block">Sambutan</span>
@@ -249,6 +397,7 @@
             </div></section>
         </div>
 
+        <!-- Visi Misi -->
         <div class="sub-content" id="sub-beranda-visimisi">
             <section class="py-10 sm:py-16"><div class="max-w-7xl mx-auto px-4 sm:px-6">
                 <span class="text-[10px] font-bold tracking-[0.2em] text-blue-400 uppercase mb-3 block">Visi & Misi</span>
@@ -274,6 +423,7 @@
             </div></section>
         </div>
 
+        <!-- Sejarah -->
         <div class="sub-content" id="sub-beranda-sejarah">
             <section class="py-10 sm:py-16"><div class="max-w-7xl mx-auto px-4 sm:px-6">
                 <span class="text-[10px] font-bold tracking-[0.2em] text-blue-400 uppercase mb-3 block">Sejarah</span>
@@ -301,7 +451,6 @@
                 <p class="text-neutral-400 font-light text-sm max-w-md mx-auto">Enam program keahlian sesuai kebutuhan industri masa kini.</p>
             </div>
         </section>
-
         <div class="max-w-7xl mx-auto px-4 sm:px-6 mb-4">
             <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
                 <button onclick="activateSub('jurusan','tkj')" class="jurusan-quick p-3 rounded-xl bg-white/[0.02] border border-blue-500/20 text-center card-hover"><iconify-icon icon="lucide:monitor" width="20" class="text-blue-400 mb-1"></iconify-icon><div class="text-[10px] font-bold">TKJ</div></button>
@@ -316,7 +465,7 @@
         <div class="sub-content active" id="sub-jurusan-tkj">
             <section class="py-6 sm:py-10"><div class="max-w-7xl mx-auto px-4 sm:px-6">
                 <div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center"><iconify-icon icon="lucide:monitor" width="20" class="text-blue-400"></iconify-icon></div><div><h2 class="text-xl font-bold">TKJ</h2><span class="text-[10px] text-neutral-500">Teknik Komputer dan Jaringan</span></div></div>
-                <div class="rounded-2xl overflow-hidden border border-white/5 mb-5 max-w-sm mx-auto sm:mx-0"><img src="tkj.jpg" alt="TKJ" class="w-full h-auto object-cover img-portrait"></div>
+                <div class="rounded-2xl overflow-hidden border border-white/5 mb-5 max-w-sm mx-auto sm:mx-0"><img src="tjk.jpg" alt="TKJ" class="w-full h-auto object-cover img-portrait"></div>
                 <p class="text-neutral-400 font-light text-sm leading-relaxed mb-5">Mempelajari perakitan komputer, instalasi jaringan, konfigurasi router/switch, dan administrasi server.</p>
                 <div class="mb-5"><h4 class="text-[10px] font-bold text-blue-400 tracking-widest uppercase mb-3">Kompetensi</h4><div class="grid grid-cols-2 gap-2">
                     <span class="flex items-center gap-2 text-xs text-neutral-400"><iconify-icon icon="lucide:check" width="12" class="text-blue-400"></iconify-icon>Perakitan PC</span>
@@ -333,8 +482,8 @@
         <div class="sub-content" id="sub-jurusan-dkv">
             <section class="py-6 sm:py-10"><div class="max-w-7xl mx-auto px-4 sm:px-6">
                 <div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center"><iconify-icon icon="lucide:palette" width="20" class="text-purple-400"></iconify-icon></div><div><h2 class="text-xl font-bold">DKV</h2><span class="text-[10px] text-neutral-500">Desain Komunikasi Visual</span></div></div>
-                <div class="rounded-2xl overflow-hidden border border-white/5 mb-5 max-w-sm mx-auto sm:mx-0"><img src="mm.jpg" alt="DKV" class="w-full h-auto object-cover img-portrait"></div>
-                <p class="text-neutral-400 font-light text-sm leading-relaxed mb-5">Mempelajari desain grafis, animasi 2D/3D, fotografi, videografi, dan UI/UX untuk media cetak dan digital.</p>
+                <div class="rounded-2xl overflow-hidden border border-white/5 mb-5 max-w-sm mx-auto sm:mx-0"><img src="https://picsum.photos/seed/dkvdesign2024/600/800.jpg" alt="DKV" class="w-full h-auto object-cover img-portrait"></div>
+                <p class="text-neutral-400 font-light text-sm leading-relaxed mb-5">Mempelajari desain grafis, animasi 2D/3D, fotografi, videografi, dan UI/UX.</p>
                 <div class="mb-5"><h4 class="text-[10px] font-bold text-purple-400 tracking-widest uppercase mb-3">Kompetensi</h4><div class="grid grid-cols-2 gap-2">
                     <span class="flex items-center gap-2 text-xs text-neutral-400"><iconify-icon icon="lucide:check" width="12" class="text-purple-400"></iconify-icon>Desain Grafis</span>
                     <span class="flex items-center gap-2 text-xs text-neutral-400"><iconify-icon icon="lucide:check" width="12" class="text-purple-400"></iconify-icon>Animasi 2D & 3D</span>
@@ -350,7 +499,7 @@
         <div class="sub-content" id="sub-jurusan-boga">
             <section class="py-6 sm:py-10"><div class="max-w-7xl mx-auto px-4 sm:px-6">
                 <div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center"><iconify-icon icon="lucide:chef-hat" width="20" class="text-orange-400"></iconify-icon></div><div><h2 class="text-xl font-bold">BOGA</h2><span class="text-[10px] text-neutral-500">Tata Boga / Kuliner</span></div></div>
-                <div class="rounded-2xl overflow-hidden border border-white/5 mb-5 max-w-sm mx-auto sm:mx-0"><img src="tb.jpg" alt="BOGA" class="w-full h-auto object-cover img-portrait"></div>
+                <div class="rounded-2xl overflow-hidden border border-white/5 mb-5 max-w-sm mx-auto sm:mx-0"><img src="https://picsum.photos/seed/bogaculinary2024/600/800.jpg" alt="BOGA" class="w-full h-auto object-cover img-portrait"></div>
                 <p class="text-neutral-400 font-light text-sm leading-relaxed mb-5">Teknik pengolahan makanan dan minuman, food presentation, dan manajemen dapur standar perhotelan.</p>
                 <div class="mb-5"><h4 class="text-[10px] font-bold text-orange-400 tracking-widest uppercase mb-3">Kompetensi</h4><div class="grid grid-cols-2 gap-2">
                     <span class="flex items-center gap-2 text-xs text-neutral-400"><iconify-icon icon="lucide:check" width="12" class="text-orange-400"></iconify-icon>Masakan Nusantara</span>
@@ -367,7 +516,7 @@
         <div class="sub-content" id="sub-jurusan-akl">
             <section class="py-6 sm:py-10"><div class="max-w-7xl mx-auto px-4 sm:px-6">
                 <div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center"><iconify-icon icon="lucide:calculator" width="20" class="text-emerald-400"></iconify-icon></div><div><h2 class="text-xl font-bold">AKL</h2><span class="text-[10px] text-neutral-500">Akuntansi & Keuangan Lembaga</span></div></div>
-                <div class="rounded-2xl overflow-hidden border border-white/5 mb-5 max-w-sm mx-auto sm:mx-0"><img src="akl.jpg" alt="AKL" class="w-full h-auto object-cover img-portrait"></div>
+                <div class="rounded-2xl overflow-hidden border border-white/5 mb-5 max-w-sm mx-auto sm:mx-0"><img src="https://picsum.photos/seed/aklaccounting2024/600/800.jpg" alt="AKL" class="w-full h-auto object-cover img-portrait"></div>
                 <p class="text-neutral-400 font-light text-sm leading-relaxed mb-5">Pencatatan keuangan, laporan keuangan, perpajakan, dan software akuntansi profesional.</p>
                 <div class="mb-5"><h4 class="text-[10px] font-bold text-emerald-400 tracking-widest uppercase mb-3">Kompetensi</h4><div class="grid grid-cols-2 gap-2">
                     <span class="flex items-center gap-2 text-xs text-neutral-400"><iconify-icon icon="lucide:check" width="12" class="text-emerald-400"></iconify-icon>Jurnal Umum</span>
@@ -384,7 +533,7 @@
         <div class="sub-content" id="sub-jurusan-bdp">
             <section class="py-6 sm:py-10"><div class="max-w-7xl mx-auto px-4 sm:px-6">
                 <div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center"><iconify-icon icon="lucide:briefcase" width="20" class="text-cyan-400"></iconify-icon></div><div><h2 class="text-xl font-bold">BDP</h2><span class="text-[10px] text-neutral-500">Bisnis Daring & Pemasaran</span></div></div>
-                <div class="rounded-2xl overflow-hidden border border-white/5 mb-5 max-w-sm mx-auto sm:mx-0"><img src="bdp.jpg" alt="BDP" class="w-full h-auto object-cover img-portrait"></div>
+                <div class="rounded-2xl overflow-hidden border border-white/5 mb-5 max-w-sm mx-auto sm:mx-0"><img src="https://picsum.photos/seed/bdpbusiness2024/600/800.jpg" alt="BDP" class="w-full h-auto object-cover img-portrait"></div>
                 <p class="text-neutral-400 font-light text-sm leading-relaxed mb-5">Pemasaran digital, e-commerce, content marketing, dan strategi bisnis modern.</p>
                 <div class="mb-5"><h4 class="text-[10px] font-bold text-cyan-400 tracking-widest uppercase mb-3">Kompetensi</h4><div class="grid grid-cols-2 gap-2">
                     <span class="flex items-center gap-2 text-xs text-neutral-400"><iconify-icon icon="lucide:check" width="12" class="text-cyan-400"></iconify-icon>Digital Marketing</span>
@@ -401,7 +550,7 @@
         <div class="sub-content" id="sub-jurusan-otkp">
             <section class="py-6 sm:py-10"><div class="max-w-7xl mx-auto px-4 sm:px-6">
                 <div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center"><iconify-icon icon="lucide:stamp" width="20" class="text-rose-400"></iconify-icon></div><div><h2 class="text-xl font-bold">OTKP</h2><span class="text-[10px] text-neutral-500">Otomatisasi Tata Kelola Perkantoran</span></div></div>
-                <div class="rounded-2xl overflow-hidden border border-white/5 mb-5 max-w-sm mx-auto sm:mx-0"><img src="otkp.jpg" alt="OTKP" class="w-full h-auto object-cover img-portrait"></div>
+                <div class="rounded-2xl overflow-hidden border border-white/5 mb-5 max-w-sm mx-auto sm:mx-0"><img src="https://picsum.photos/seed/otkpoffice2024/600/800.jpg" alt="OTKP" class="w-full h-auto object-cover img-portrait"></div>
                 <p class="text-neutral-400 font-light text-sm leading-relaxed mb-5">Pengelolaan kantor modern, aplikasi perkantoran, kearsipan digital, dan administrasi.</p>
                 <div class="mb-5"><h4 class="text-[10px] font-bold text-rose-400 tracking-widest uppercase mb-3">Kompetensi</h4><div class="grid grid-cols-2 gap-2">
                     <span class="flex items-center gap-2 text-xs text-neutral-400"><iconify-icon icon="lucide:check" width="12" class="text-rose-400"></iconify-icon>Microsoft Office</span>
@@ -418,286 +567,64 @@
 
     <!-- ==================== EKSKUL ==================== -->
     <div class="tab-content" id="tab-ekskul">
-        <section class="hero-gradient pt-14 grid-bg pb-8">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 text-center">
-                <span class="text-[10px] font-bold tracking-[0.2em] text-blue-400 uppercase mb-3 block">Pengembangan Diri</span>
-                <h1 class="text-3xl sm:text-4xl md:text-6xl font-black tracking-tighter uppercase mb-4">Ekstra<span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">kurikuler</span></h1>
-            </div>
-        </section>
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3">
-            <div class="sub-scroll border-b border-white/5 pb-3">
-                <button class="sub-btn active px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="pramuka" data-parent="ekskul">Pramuka</button>
-                <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="pmr" data-parent="ekskul">PMR</button>
-                <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="olahraga" data-parent="ekskul">Olahraga</button>
-                <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="seni" data-parent="ekskul">Seni & Budaya</button>
-                <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="rohis" data-parent="ekskul">Rohis</button>
-            </div>
-        </div>
-
-        <div class="sub-content active" id="sub-ekskul-pramuka">
-            <section class="py-6 sm:py-10"><div class="max-w-7xl mx-auto px-4 sm:px-6">
-                <div class="rounded-2xl overflow-hidden border border-white/5 mb-5 max-w-sm mx-auto sm:mx-0"><img src="https://picsum.photos/seed/pramuka2024/600/800.jpg" alt="Pramuka" class="w-full h-auto object-cover img-portrait"></div>
-                <h2 class="text-xl font-bold mb-3">Pramuka</h2>
-                <p class="text-neutral-400 font-light text-sm leading-relaxed mb-5">Wajib kelas X sebagai wadah pembentukan karakter, kedisiplinan, dan kepemimpinan. Aktif mengikuti perkemahan dan lomba tingkat kota hingga nasional.</p>
-                <div class="space-y-2">
-                    <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5"><span class="text-xs text-neutral-300 font-medium">Jambore Tingkat Kota - </span><span class="text-xs text-blue-400 font-bold">Juara 2 (2024)</span></div>
-                    <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5"><span class="text-xs text-neutral-300 font-medium">Lomba Pioneering Provinsi - </span><span class="text-xs text-blue-400 font-bold">Juara 3 (2023)</span></div>
-                </div>
-            </div></section>
-        </div>
-        <div class="sub-content" id="sub-ekskul-pmr">
-            <section class="py-6 sm:py-10"><div class="max-w-7xl mx-auto px-4 sm:px-6">
-                <div class="rounded-2xl overflow-hidden border border-white/5 mb-5 max-w-sm mx-auto sm:mx-0"><img src="https://picsum.photos/seed/pmr2024/600/800.jpg" alt="PMR" class="w-full h-auto object-cover img-portrait"></div>
-                <h2 class="text-xl font-bold mb-3">Palang Merah Remaja</h2>
-                <p class="text-neutral-400 font-light text-sm leading-relaxed mb-5">Melatih pertolongan pertama, penanganan bencana, dan kesehatan remaja. Aktif bertugas di setiap kegiatan sekolah.</p>
-                <div class="space-y-2">
-                    <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5"><span class="text-xs text-neutral-300 font-medium">Lomba PMR Wira Kota - </span><span class="text-xs text-blue-400 font-bold">Juara 1 (2024)</span></div>
-                    <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5"><span class="text-xs text-neutral-300 font-medium">Donor Darah Bersama PMI - </span><span class="text-xs text-neutral-500">Rutin per semester</span></div>
-                </div>
-            </div></section>
-        </div>
-        <div class="sub-content" id="sub-ekskul-olahraga">
-            <section class="py-6 sm:py-10"><div class="max-w-7xl mx-auto px-4 sm:px-6">
-                <div class="rounded-2xl overflow-hidden border border-white/5 mb-5 max-w-sm mx-auto sm:mx-0"><img src="https://picsum.photos/seed/sports2024/600/800.jpg" alt="Olahraga" class="w-full h-auto object-cover img-portrait"></div>
-                <h2 class="text-xl font-bold mb-3">Olahraga</h2>
-                <p class="text-neutral-400 font-light text-sm leading-relaxed mb-5">Futsal, basket, voli, badminton, dan pencak silat dengan pelatih profesional.</p>
-                <div class="grid grid-cols-2 gap-2">
-                    <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 text-center"><iconify-icon icon="lucide:circle-dot" width="20" class="text-blue-400 mb-1"></iconify-icon><div class="text-xs font-medium">Futsal</div></div>
-                    <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 text-center"><iconify-icon icon="lucide:target" width="20" class="text-blue-400 mb-1"></iconify-icon><div class="text-xs font-medium">Basket</div></div>
-                    <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 text-center"><iconify-icon icon="lucide:swords" width="20" class="text-blue-400 mb-1"></iconify-icon><div class="text-xs font-medium">Pencak Silat</div></div>
-                    <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 text-center"><iconify-icon icon="lucide:feather" width="20" class="text-blue-400 mb-1"></iconify-icon><div class="text-xs font-medium">Badminton</div></div>
-                </div>
-            </div></section>
-        </div>
-        <div class="sub-content" id="sub-ekskul-seni">
-            <section class="py-6 sm:py-10"><div class="max-w-7xl mx-auto px-4 sm:px-6">
-                <div class="rounded-2xl overflow-hidden border border-white/5 mb-5 max-w-sm mx-auto sm:mx-0"><img src="https://picsum.photos/seed/arts2024/600/800.jpg" alt="Seni" class="w-full h-auto object-cover img-portrait"></div>
-                <h2 class="text-xl font-bold mb-3">Seni & Budaya</h2>
-                <p class="text-neutral-400 font-light text-sm leading-relaxed mb-5">Nasyid, hadroh, kaligrafi, teater, dan tari tradisional sebagai sarana ekspresi dan pelestarian budaya.</p>
-                <div class="grid grid-cols-2 gap-2">
-                    <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 text-center"><iconify-icon icon="lucide:music" width="20" class="text-blue-400 mb-1"></iconify-icon><div class="text-xs font-medium">Nasyid & Hadroh</div></div>
-                    <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 text-center"><iconify-icon icon="lucide:pen-tool" width="20" class="text-blue-400 mb-1"></iconify-icon><div class="text-xs font-medium">Kaligrafi</div></div>
-                    <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 text-center"><iconify-icon icon="lucide:drama" width="20" class="text-blue-400 mb-1"></iconify-icon><div class="text-xs font-medium">Teater</div></div>
-                    <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 text-center"><iconify-icon icon="lucide:sparkles" width="20" class="text-blue-400 mb-1"></iconify-icon><div class="text-xs font-medium">Tari Tradisional</div></div>
-                </div>
-            </div></section>
-        </div>
-        <div class="sub-content" id="sub-ekskul-rohis">
-            <section class="py-6 sm:py-10"><div class="max-w-7xl mx-auto px-4 sm:px-6">
-                <div class="rounded-2xl overflow-hidden border border-white/5 mb-5 max-w-sm mx-auto sm:mx-0"><img src="https://picsum.photos/seed/rohis2024/600/800.jpg" alt="Rohis" class="w-full h-auto object-cover img-portrait"></div>
-                <h2 class="text-xl font-bold mb-3">Rohani Islam (Rohis)</h2>
-                <p class="text-neutral-400 font-light text-sm leading-relaxed mb-5">Motor penggerak kegiatan keagamaan: kajian mingguan, peringatan hari besar Islam, tahfidz, dan sosial kemasyarakatan.</p>
-                <div class="space-y-2">
-                    <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5"><span class="text-xs text-neutral-300">💬 Kajian Rutin Setiap Jumat</span></div>
-                    <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5"><span class="text-xs text-neutral-300">📖 Program Tahfidz Juz 30</span></div>
-                    <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5"><span class="text-xs text-neutral-300">🤝 Santunan Anak Yatim</span></div>
-                </div>
-            </div></section>
-        </div>
+        <section class="hero-gradient pt-14 grid-bg pb-8"><div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 text-center"><span class="text-[10px] font-bold tracking-[0.2em] text-blue-400 uppercase mb-3 block">Pengembangan Diri</span><h1 class="text-3xl sm:text-4xl md:text-6xl font-black tracking-tighter uppercase mb-4">Ekstra<span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">kurikuler</span></h1></div></section>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3"><div class="sub-scroll border-b border-white/5 pb-3">
+            <button class="sub-btn active px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="pramuka" data-parent="ekskul">Pramuka</button>
+            <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="pmr" data-parent="ekskul">PMR</button>
+            <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="olahraga" data-parent="ekskul">Olahraga</button>
+            <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="seni" data-parent="ekskul">Seni & Budaya</button>
+            <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="rohis" data-parent="ekskul">Rohis</button>
+        </div></div>
+        <div class="sub-content active" id="sub-ekskul-pramuka"><section class="py-6 sm:py-10"><div class="max-w-7xl mx-auto px-4 sm:px-6"><div class="rounded-2xl overflow-hidden border border-white/5 mb-5 max-w-sm mx-auto sm:mx-0"><img src="https://picsum.photos/seed/pramuka2024/600/800.jpg" alt="Pramuka" class="w-full h-auto object-cover img-portrait"></div><h2 class="text-xl font-bold mb-3">Pramuka</h2><p class="text-neutral-400 font-light text-sm leading-relaxed mb-5">Wajib kelas X sebagai wadah pembentukan karakter, kedisiplinan, dan kepemimpinan.</p><div class="space-y-2"><div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5"><span class="text-xs text-neutral-300 font-medium">Jambore Tingkat Kota - </span><span class="text-xs text-blue-400 font-bold">Juara 2 (2024)</span></div><div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5"><span class="text-xs text-neutral-300 font-medium">Lomba Pioneering Provinsi - </span><span class="text-xs text-blue-400 font-bold">Juara 3 (2023)</span></div></div></div></section></div>
+        <div class="sub-content" id="sub-ekskul-pmr"><section class="py-6 sm:py-10"><div class="max-w-7xl mx-auto px-4 sm:px-6"><div class="rounded-2xl overflow-hidden border border-white/5 mb-5 max-w-sm mx-auto sm:mx-0"><img src="https://picsum.photos/seed/pmr2024/600/800.jpg" alt="PMR" class="w-full h-auto object-cover img-portrait"></div><h2 class="text-xl font-bold mb-3">Palang Merah Remaja</h2><p class="text-neutral-400 font-light text-sm leading-relaxed mb-5">Melatih pertolongan pertama, penanganan bencana, dan kesehatan remaja.</p><div class="space-y-2"><div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5"><span class="text-xs text-neutral-300 font-medium">Lomba PMR Wira Kota - </span><span class="text-xs text-blue-400 font-bold">Juara 1 (2024)</span></div></div></div></section></div>
+        <div class="sub-content" id="sub-ekskul-olahraga"><section class="py-6 sm:py-10"><div class="max-w-7xl mx-auto px-4 sm:px-6"><div class="rounded-2xl overflow-hidden border border-white/5 mb-5 max-w-sm mx-auto sm:mx-0"><img src="https://picsum.photos/seed/sports2024/600/800.jpg" alt="Olahraga" class="w-full h-auto object-cover img-portrait"></div><h2 class="text-xl font-bold mb-3">Olahraga</h2><p class="text-neutral-400 font-light text-sm leading-relaxed mb-5">Futsal, basket, voli, badminton, dan pencak silat dengan pelatih profesional.</p><div class="grid grid-cols-2 gap-2"><div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 text-center"><iconify-icon icon="lucide:circle-dot" width="20" class="text-blue-400 mb-1"></iconify-icon><div class="text-xs font-medium">Futsal</div></div><div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 text-center"><iconify-icon icon="lucide:target" width="20" class="text-blue-400 mb-1"></iconify-icon><div class="text-xs font-medium">Basket</div></div><div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 text-center"><iconify-icon icon="lucide:swords" width="20" class="text-blue-400 mb-1"></iconify-icon><div class="text-xs font-medium">Pencak Silat</div></div><div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 text-center"><iconify-icon icon="lucide:feather" width="20" class="text-blue-400 mb-1"></iconify-icon><div class="text-xs font-medium">Badminton</div></div></div></div></section></div>
+        <div class="sub-content" id="sub-ekskul-seni"><section class="py-6 sm:py-10"><div class="max-w-7xl mx-auto px-4 sm:px-6"><div class="rounded-2xl overflow-hidden border border-white/5 mb-5 max-w-sm mx-auto sm:mx-0"><img src="https://picsum.photos/seed/arts2024/600/800.jpg" alt="Seni" class="w-full h-auto object-cover img-portrait"></div><h2 class="text-xl font-bold mb-3">Seni & Budaya</h2><p class="text-neutral-400 font-light text-sm leading-relaxed mb-5">Nasyid, hadroh, kaligrafi, teater, dan tari tradisional.</p><div class="grid grid-cols-2 gap-2"><div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 text-center"><iconify-icon icon="lucide:music" width="20" class="text-blue-400 mb-1"></iconify-icon><div class="text-xs font-medium">Nasyid & Hadroh</div></div><div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 text-center"><iconify-icon icon="lucide:pen-tool" width="20" class="text-blue-400 mb-1"></iconify-icon><div class="text-xs font-medium">Kaligrafi</div></div><div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 text-center"><iconify-icon icon="lucide:drama" width="20" class="text-blue-400 mb-1"></iconify-icon><div class="text-xs font-medium">Teater</div></div><div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 text-center"><iconify-icon icon="lucide:sparkles" width="20" class="text-blue-400 mb-1"></iconify-icon><div class="text-xs font-medium">Tari Tradisional</div></div></div></div></section></div>
+        <div class="sub-content" id="sub-ekskul-rohis"><section class="py-6 sm:py-10"><div class="max-w-7xl mx-auto px-4 sm:px-6"><div class="rounded-2xl overflow-hidden border border-white/5 mb-5 max-w-sm mx-auto sm:mx-0"><img src="https://picsum.photos/seed/rohis2024/600/800.jpg" alt="Rohis" class="w-full h-auto object-cover img-portrait"></div><h2 class="text-xl font-bold mb-3">Rohani Islam (Rohis)</h2><p class="text-neutral-400 font-light text-sm leading-relaxed mb-5">Motor penggerak kegiatan keagamaan: kajian, tahfidz, dan sosial kemasyarakatan.</p><div class="space-y-2"><div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5"><span class="text-xs text-neutral-300">💬 Kajian Rutin Setiap Jumat</span></div><div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5"><span class="text-xs text-neutral-300">📖 Program Tahfidz Juz 30</span></div><div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5"><span class="text-xs text-neutral-300">🤝 Santunan Anak Yatim</span></div></div></div></section></div>
     </div>
 
     <!-- ==================== INFORMASI ==================== -->
     <div class="tab-content" id="tab-informasi">
-        <section class="hero-gradient pt-14 grid-bg pb-8">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 text-center">
-                <span class="text-[10px] font-bold tracking-[0.2em] text-blue-400 uppercase mb-3 block">Pusat Informasi</span>
-                <h1 class="text-3xl sm:text-4xl md:text-6xl font-black tracking-tighter uppercase mb-4">Info<span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">rmasi</span></h1>
-            </div>
-        </section>
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3">
-            <div class="sub-scroll border-b border-white/5 pb-3">
-                <button class="sub-btn active px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="pendaftaran" data-parent="informasi">Pendaftaran</button>
-                <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="biaya" data-parent="informasi">Biaya</button>
-                <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="kalender" data-parent="informasi">Kalender</button>
-                <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="faq" data-parent="informasi">FAQ</button>
-            </div>
-        </div>
-
-        <div class="sub-content active" id="sub-informasi-pendaftaran">
-            <section class="py-6 sm:py-10"><div class="max-w-3xl mx-auto px-4 sm:px-6">
-                <h2 class="text-xl sm:text-2xl font-bold mb-5">Pendaftaran <span class="text-blue-400">2025/2026</span></h2>
-                <div class="p-5 rounded-2xl bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/10 mb-6">
-                    <div class="flex items-center gap-2 mb-2"><iconify-icon icon="lucide:calendar-check" width="18" class="text-blue-400"></iconify-icon><span class="text-sm font-bold">Gel. 1: Jan - Mar 2025</span></div>
-                    <p class="text-xs text-neutral-400">Gel. 2: Apr - Jun | Gel. 3: Jul (sesuai kuota)</p>
-                </div>
-                <h3 class="text-sm font-bold mb-3">Syarat Pendaftaran:</h3>
-                <div class="space-y-2 mb-6">
-                    <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-start gap-3"><span class="w-6 h-6 rounded-md bg-blue-500/10 flex items-center justify-center text-[10px] font-bold text-blue-400 shrink-0">1</span><span class="text-xs text-neutral-400 font-light">Lulusan SMP/MTs atau sederajat</span></div>
-                    <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-start gap-3"><span class="w-6 h-6 rounded-md bg-blue-500/10 flex items-center justify-center text-[10px] font-bold text-blue-400 shrink-0">2</span><span class="text-xs text-neutral-400 font-light">Fotokopi Ijazah/SKL</span></div>
-                    <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-start gap-3"><span class="w-6 h-6 rounded-md bg-blue-500/10 flex items-center justify-center text-[10px] font-bold text-blue-400 shrink-0">3</span><span class="text-xs text-neutral-400 font-light">Fotokopi Rapor Semester 1-5</span></div>
-                    <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-start gap-3"><span class="w-6 h-6 rounded-md bg-blue-500/10 flex items-center justify-center text-[10px] font-bold text-blue-400 shrink-0">4</span><span class="text-xs text-neutral-400 font-light">Pas foto 3x4 (4 lbr, latar merah)</span></div>
-                    <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-start gap-3"><span class="w-6 h-6 rounded-md bg-blue-500/10 flex items-center justify-center text-[10px] font-bold text-blue-400 shrink-0">5</span><span class="text-xs text-neutral-400 font-light">Fotokopi KK & Akta Kelahiran</span></div>
-                    <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-start gap-3"><span class="w-6 h-6 rounded-md bg-blue-500/10 flex items-center justify-center text-[10px] font-bold text-blue-400 shrink-0">6</span><span class="text-xs text-neutral-400 font-light">Mengisi formulir pendaftaran</span></div>
-                </div>
-                <button onclick="showToast('Formulir pendaftaran akan segera tersedia!')" class="w-full sm:w-auto px-8 py-3.5 bg-blue-600 active:bg-blue-500 text-white text-[11px] font-bold tracking-widest uppercase rounded-lg transition-all">Daftar Sekarang</button>
-            </div></section>
-        </div>
-        <div class="sub-content" id="sub-informasi-biaya">
-            <section class="py-6 sm:py-10"><div class="max-w-3xl mx-auto px-4 sm:px-6">
-                <h2 class="text-xl sm:text-2xl font-bold mb-5">Biaya <span class="text-blue-400">Pendidikan</span></h2>
-                <div class="rounded-2xl border border-white/5 overflow-hidden">
-                    <table class="mobile-table w-full">
-                        <thead><tr class="border-b border-white/10"><th class="text-left py-3 px-4 text-[10px] font-bold tracking-wider uppercase text-blue-400">Komponen</th><th class="text-right py-3 px-4 text-[10px] font-bold tracking-wider uppercase text-blue-400">Biaya</th></tr></thead>
-                        <tbody>
-                            <tr class="border-b border-white/5"><td data-label="Komponen" class="text-xs text-neutral-400">Uang Pangkal</td><td data-label="Biaya" class="text-xs font-semibold text-right">Rp 3.500.000</td></tr>
-                            <tr class="border-b border-white/5"><td data-label="Komponen" class="text-xs text-neutral-400">SPP Bulanan</td><td data-label="Biaya" class="text-xs font-semibold text-right">Rp 450.000</td></tr>
-                            <tr class="border-b border-white/5"><td data-label="Komponen" class="text-xs text-neutral-400">Seragam (2 set)</td><td data-label="Biaya" class="text-xs font-semibold text-right">Rp 1.200.000</td></tr>
-                            <tr class="border-b border-white/5"><td data-label="Komponen" class="text-xs text-neutral-400">Buku Paket</td><td data-label="Biaya" class="text-xs font-semibold text-right">Rp 750.000</td></tr>
-                            <tr class="border-b border-white/5"><td data-label="Komponen" class="text-xs text-neutral-400">Praktik / semester</td><td data-label="Biaya" class="text-xs font-semibold text-right">Rp 500.000</td></tr>
-                            <tr><td data-label="Komponen" class="text-xs text-neutral-400">Kegiatan Islami</td><td data-label="Biaya" class="text-xs font-semibold text-right">Rp 200.000</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <p class="text-neutral-600 text-[10px] mt-3">*Tersedia keringanan bagi siswa berprestasi & kurang mampu.</p>
-            </div></section>
-        </div>
-        <div class="sub-content" id="sub-informasi-kalender">
-            <section class="py-6 sm:py-10"><div class="max-w-3xl mx-auto px-4 sm:px-6">
-                <h2 class="text-xl sm:text-2xl font-bold mb-5">Kalender <span class="text-blue-400">Akademik 2025</span></h2>
-                <div class="space-y-3">
-                    <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-3"><div class="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0"></div><div class="flex-1 min-w-0"><div class="text-xs font-semibold truncate">PMB Gelombang 1</div><div class="text-[10px] text-neutral-500">Jan - Mar 2025</div></div><span class="text-[9px] px-2 py-1 rounded-full bg-blue-500/10 text-blue-400 font-bold shrink-0">PPDB</span></div>
-                    <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-3"><div class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></div><div class="flex-1 min-w-0"><div class="text-xs font-semibold truncate">Awal Tahun Ajaran</div><div class="text-[10px] text-neutral-500">14 Juli 2025</div></div><span class="text-[9px] px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-bold shrink-0">Akademik</span></div>
-                    <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-3"><div class="w-2.5 h-2.5 rounded-full bg-yellow-500 shrink-0"></div><div class="flex-1 min-w-0"><div class="text-xs font-semibold truncate">PTS Semester 1</div><div class="text-[10px] text-neutral-500">29 Sep - 3 Okt</div></div><span class="text-[9px] px-2 py-1 rounded-full bg-yellow-500/10 text-yellow-400 font-bold shrink-0">Ujian</span></div>
-                    <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-3"><div class="w-2.5 h-2.5 rounded-full bg-orange-500 shrink-0"></div><div class="flex-1 min-w-0"><div class="text-xs font-semibold truncate">UAS Semester 1</div><div class="text-[10px] text-neutral-500">15 - 20 Des</div></div><span class="text-[9px] px-2 py-1 rounded-full bg-orange-500/10 text-orange-400 font-bold shrink-0">Ujian</span></div>
-                    <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-3"><div class="w-2.5 h-2.5 rounded-full bg-purple-500 shrink-0"></div><div class="flex-1 min-w-0"><div class="text-xs font-semibold truncate">Libur Semester</div><div class="text-[10px] text-neutral-500">22 Des - 11 Jan</div></div><span class="text-[9px] px-2 py-1 rounded-full bg-purple-500/10 text-purple-400 font-bold shrink-0">Libur</span></div>
-                </div>
-            </div></section>
-        </div>
-        <div class="sub-content" id="sub-informasi-faq">
-            <section class="py-6 sm:py-10"><div class="max-w-3xl mx-auto px-4 sm:px-6">
-                <h2 class="text-xl sm:text-2xl font-bold mb-5">Pertanyaan <span class="text-blue-400">Umum</span></h2>
-                <div class="space-y-2">
-                    <div class="rounded-xl border border-white/5 overflow-hidden"><button class="w-full text-left p-4 flex items-center justify-between" onclick="toggleFaq(this)"><span class="text-xs font-semibold pr-3">Apakah menerima siswa non-muslim?</span><iconify-icon icon="lucide:chevron-down" width="16" class="text-blue-400 shrink-0 transition-transform"></iconify-icon></button><div class="faq-answer px-4 pb-4 hidden"><p class="text-xs text-neutral-400 leading-relaxed">Ya, SMK Islamiyah Ciputat menerima siswa dari semua agama. Seluruh siswa tetap mengikuti kegiatan keagamaan Islam yang bersifat edukatif dan toleran.</p></div></div>
-                    <div class="rounded-xl border border-white/5 overflow-hidden"><button class="w-full text-left p-4 flex items-center justify-between" onclick="toggleFaq(this)"><span class="text-xs font-semibold pr-3">Apakah ada program beasiswa?</span><iconify-icon icon="lucide:chevron-down" width="16" class="text-blue-400 shrink-0 transition-transform"></iconify-icon></button><div class="faq-answer px-4 pb-4 hidden"><p class="text-xs text-neutral-400 leading-relaxed">Tersedia beasiswa bagi siswa berprestasi dan keringanan bagi keluarga kurang mampu. Hubungi TU untuk info lengkap.</p></div></div>
-                    <div class="rounded-xl border border-white/5 overflow-hidden"><button class="w-full text-left p-4 flex items-center justify-between" onclick="toggleFaq(this)"><span class="text-xs font-semibold pr-3">Kerjasama dengan industri?</span><iconify-icon icon="lucide:chevron-down" width="16" class="text-blue-400 shrink-0 transition-transform"></iconify-icon></button><div class="faq-answer px-4 pb-4 hidden"><p class="text-xs text-neutral-400 leading-relaxed">Kerjasama dengan 30+ perusahaan untuk PKL, magang, dan rekrutmen langsung lulusan.</p></div></div>
-                    <div class="rounded-xl border border-white/5 overflow-hidden"><button class="w-full text-left p-4 flex items-center justify-between" onclick="toggleFaq(this)"><span class="text-xs font-semibold pr-3">Sistem pembelajaran saat ini?</span><iconify-icon icon="lucide:chevron-down" width="16" class="text-blue-400 shrink-0 transition-transform"></iconify-icon></button><div class="faq-answer px-4 pb-4 hidden"><p class="text-xs text-neutral-400 leading-relaxed">100% offline dengan platform E-Learning pendukung untuk tugas mandiri.</p></div></div>
-                </div>
-            </div></section>
-        </div>
+        <section class="hero-gradient pt-14 grid-bg pb-8"><div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 text-center"><span class="text-[10px] font-bold tracking-[0.2em] text-blue-400 uppercase mb-3 block">Pusat Informasi</span><h1 class="text-3xl sm:text-4xl md:text-6xl font-black tracking-tighter uppercase mb-4">Info<span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">rmasi</span></h1></div></section>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3"><div class="sub-scroll border-b border-white/5 pb-3">
+            <button class="sub-btn active px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="pendaftaran" data-parent="informasi">Pendaftaran</button>
+            <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="biaya" data-parent="informasi">Biaya</button>
+            <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="kalender" data-parent="informasi">Kalender</button>
+            <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="faq" data-parent="informasi">FAQ</button>
+        </div></div>
+        <div class="sub-content active" id="sub-informasi-pendaftaran"><section class="py-6 sm:py-10"><div class="max-w-3xl mx-auto px-4 sm:px-6"><h2 class="text-xl sm:text-2xl font-bold mb-5">Pendaftaran <span class="text-blue-400">2025/2026</span></h2><div class="p-5 rounded-2xl bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/10 mb-6"><div class="flex items-center gap-2 mb-2"><iconify-icon icon="lucide:calendar-check" width="18" class="text-blue-400"></iconify-icon><span class="text-sm font-bold">Gel. 1: Jan - Mar 2025</span></div><p class="text-xs text-neutral-400">Gel. 2: Apr - Jun | Gel. 3: Jul (sesuai kuota)</p></div><h3 class="text-sm font-bold mb-3">Syarat Pendaftaran:</h3><div class="space-y-2 mb-6"><div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-start gap-3"><span class="w-6 h-6 rounded-md bg-blue-500/10 flex items-center justify-center text-[10px] font-bold text-blue-400 shrink-0">1</span><span class="text-xs text-neutral-400 font-light">Lulusan SMP/MTs atau sederajat</span></div><div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-start gap-3"><span class="w-6 h-6 rounded-md bg-blue-500/10 flex items-center justify-center text-[10px] font-bold text-blue-400 shrink-0">2</span><span class="text-xs text-neutral-400 font-light">Fotokopi Ijazah/SKL</span></div><div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-start gap-3"><span class="w-6 h-6 rounded-md bg-blue-500/10 flex items-center justify-center text-[10px] font-bold text-blue-400 shrink-0">3</span><span class="text-xs text-neutral-400 font-light">Fotokopi Rapor Semester 1-5</span></div><div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-start gap-3"><span class="w-6 h-6 rounded-md bg-blue-500/10 flex items-center justify-center text-[10px] font-bold text-blue-400 shrink-0">4</span><span class="text-xs text-neutral-400 font-light">Pas foto 3x4 (4 lbr, latar merah)</span></div><div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-start gap-3"><span class="w-6 h-6 rounded-md bg-blue-500/10 flex items-center justify-center text-[10px] font-bold text-blue-400 shrink-0">5</span><span class="text-xs text-neutral-400 font-light">Fotokopi KK & Akta Kelahiran</span></div><div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-start gap-3"><span class="w-6 h-6 rounded-md bg-blue-500/10 flex items-center justify-center text-[10px] font-bold text-blue-400 shrink-0">6</span><span class="text-xs text-neutral-400 font-light">Mengisi formulir pendaftaran</span></div></div><button onclick="showToast('Formulir pendaftaran akan segera tersedia!')" class="w-full sm:w-auto px-8 py-3.5 bg-blue-600 active:bg-blue-500 text-white text-[11px] font-bold tracking-widest uppercase rounded-lg transition-all">Daftar Sekarang</button></div></section></div>
+        <div class="sub-content" id="sub-informasi-biaya"><section class="py-6 sm:py-10"><div class="max-w-3xl mx-auto px-4 sm:px-6"><h2 class="text-xl sm:text-2xl font-bold mb-5">Biaya <span class="text-blue-400">Pendidikan</span></h2><div class="rounded-2xl border border-white/5 overflow-hidden"><table class="mobile-table w-full"><thead><tr class="border-b border-white/10"><th class="text-left py-3 px-4 text-[10px] font-bold tracking-wider uppercase text-blue-400">Komponen</th><th class="text-right py-3 px-4 text-[10px] font-bold tracking-wider uppercase text-blue-400">Biaya</th></tr></thead><tbody><tr class="border-b border-white/5"><td data-label="Komponen" class="text-xs text-neutral-400">Uang Pangkal</td><td data-label="Biaya" class="text-xs font-semibold text-right">Rp 3.500.000</td></tr><tr class="border-b border-white/5"><td data-label="Komponen" class="text-xs text-neutral-400">SPP Bulanan</td><td data-label="Biaya" class="text-xs font-semibold text-right">Rp 450.000</td></tr><tr class="border-b border-white/5"><td data-label="Komponen" class="text-xs text-neutral-400">Seragam (2 set)</td><td data-label="Biaya" class="text-xs font-semibold text-right">Rp 1.200.000</td></tr><tr class="border-b border-white/5"><td data-label="Komponen" class="text-xs text-neutral-400">Buku Paket</td><td data-label="Biaya" class="text-xs font-semibold text-right">Rp 750.000</td></tr><tr class="border-b border-white/5"><td data-label="Komponen" class="text-xs text-neutral-400">Praktik / semester</td><td data-label="Biaya" class="text-xs font-semibold text-right">Rp 500.000</td></tr><tr><td data-label="Komponen" class="text-xs text-neutral-400">Kegiatan Islami</td><td data-label="Biaya" class="text-xs font-semibold text-right">Rp 200.000</td></tr></tbody></table></div><p class="text-neutral-600 text-[10px] mt-3">*Tersedia keringanan bagi siswa berprestasi & kurang mampu.</p></div></section></div>
+        <div class="sub-content" id="sub-informasi-kalender"><section class="py-6 sm:py-10"><div class="max-w-3xl mx-auto px-4 sm:px-6"><h2 class="text-xl sm:text-2xl font-bold mb-5">Kalender <span class="text-blue-400">Akademik 2025</span></h2><div class="space-y-3"><div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-3"><div class="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0"></div><div class="flex-1 min-w-0"><div class="text-xs font-semibold truncate">PMB Gelombang 1</div><div class="text-[10px] text-neutral-500">Jan - Mar 2025</div></div><span class="text-[9px] px-2 py-1 rounded-full bg-blue-500/10 text-blue-400 font-bold shrink-0">PPDB</span></div><div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-3"><div class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></div><div class="flex-1 min-w-0"><div class="text-xs font-semibold truncate">Awal Tahun Ajaran</div><div class="text-[10px] text-neutral-500">14 Juli 2025</div></div><span class="text-[9px] px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-bold shrink-0">Akademik</span></div><div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-3"><div class="w-2.5 h-2.5 rounded-full bg-yellow-500 shrink-0"></div><div class="flex-1 min-w-0"><div class="text-xs font-semibold truncate">PTS Semester 1</div><div class="text-[10px] text-neutral-500">29 Sep - 3 Okt</div></div><span class="text-[9px] px-2 py-1 rounded-full bg-yellow-500/10 text-yellow-400 font-bold shrink-0">Ujian</span></div><div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-3"><div class="w-2.5 h-2.5 rounded-full bg-orange-500 shrink-0"></div><div class="flex-1 min-w-0"><div class="text-xs font-semibold truncate">UAS Semester 1</div><div class="text-[10px] text-neutral-500">15 - 20 Des</div></div><span class="text-[9px] px-2 py-1 rounded-full bg-orange-500/10 text-orange-400 font-bold shrink-0">Ujian</span></div><div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-3"><div class="w-2.5 h-2.5 rounded-full bg-purple-500 shrink-0"></div><div class="flex-1 min-w-0"><div class="text-xs font-semibold truncate">Libur Semester</div><div class="text-[10px] text-neutral-500">22 Des - 11 Jan</div></div><span class="text-[9px] px-2 py-1 rounded-full bg-purple-500/10 text-purple-400 font-bold shrink-0">Libur</span></div></div></div></section></div>
+        <div class="sub-content" id="sub-informasi-faq"><section class="py-6 sm:py-10"><div class="max-w-3xl mx-auto px-4 sm:px-6"><h2 class="text-xl sm:text-2xl font-bold mb-5">Pertanyaan <span class="text-blue-400">Umum</span></h2><div class="space-y-2"><div class="rounded-xl border border-white/5 overflow-hidden"><button class="w-full text-left p-4 flex items-center justify-between" onclick="toggleFaq(this)"><span class="text-xs font-semibold pr-3">Apakah menerima siswa non-muslim?</span><iconify-icon icon="lucide:chevron-down" width="16" class="text-blue-400 shrink-0 transition-transform"></iconify-icon></button><div class="faq-answer px-4 pb-4 hidden"><p class="text-xs text-neutral-400 leading-relaxed">Ya, SMK Islamiyah Ciputat menerima siswa dari semua agama.</p></div></div><div class="rounded-xl border border-white/5 overflow-hidden"><button class="w-full text-left p-4 flex items-center justify-between" onclick="toggleFaq(this)"><span class="text-xs font-semibold pr-3">Apakah ada program beasiswa?</span><iconify-icon icon="lucide:chevron-down" width="16" class="text-blue-400 shrink-0 transition-transform"></iconify-icon></button><div class="faq-answer px-4 pb-4 hidden"><p class="text-xs text-neutral-400 leading-relaxed">Tersedia beasiswa bagi siswa berprestasi dan keringanan bagi keluarga kurang mampu.</p></div></div><div class="rounded-xl border border-white/5 overflow-hidden"><button class="w-full text-left p-4 flex items-center justify-between" onclick="toggleFaq(this)"><span class="text-xs font-semibold pr-3">Kerjasama dengan industri?</span><iconify-icon icon="lucide:chevron-down" width="16" class="text-blue-400 shrink-0 transition-transform"></iconify-icon></button><div class="faq-answer px-4 pb-4 hidden"><p class="text-xs text-neutral-400 leading-relaxed">Kerjasama dengan 30+ perusahaan untuk PKL, magang, dan rekrutmen langsung lulusan.</p></div></div><div class="rounded-xl border border-white/5 overflow-hidden"><button class="w-full text-left p-4 flex items-center justify-between" onclick="toggleFaq(this)"><span class="text-xs font-semibold pr-3">Sistem pembelajaran saat ini?</span><iconify-icon icon="lucide:chevron-down" width="16" class="text-blue-400 shrink-0 transition-transform"></iconify-icon></button><div class="faq-answer px-4 pb-4 hidden"><p class="text-xs text-neutral-400 leading-relaxed">100% offline dengan platform E-Learning pendukung untuk tugas mandiri.</p></div></div></div></div></section></div>
     </div>
 
     <!-- ==================== GALERI ==================== -->
     <div class="tab-content" id="tab-galeri">
-        <section class="hero-gradient pt-14 grid-bg pb-8">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 text-center">
-                <span class="text-[10px] font-bold tracking-[0.2em] text-blue-400 uppercase mb-3 block">Dokumentasi</span>
-                <h1 class="text-3xl sm:text-4xl md:text-6xl font-black tracking-tighter uppercase mb-4">Ga<span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">leri</span></h1>
-            </div>
-        </section>
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3">
-            <div class="sub-scroll border-b border-white/5 pb-3">
-                <button class="sub-btn active px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="foto" data-parent="galeri">Foto</button>
-                <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="prestasi" data-parent="galeri">Prestasi</button>
-                <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="fasilitas" data-parent="galeri">Fasilitas</button>
-                <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="video" data-parent="galeri">Video</button>
-            </div>
-        </div>
-
-        <div class="sub-content active" id="sub-galeri-foto">
-            <section class="py-6 sm:py-10"><div class="max-w-7xl mx-auto px-4 sm:px-6">
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-                    <div class="rounded-xl overflow-hidden border border-white/5 img-portrait"><img src="https://picsum.photos/seed/school1/500/667.jpg" class="w-full h-full object-cover" alt="1"></div>
-                    <div class="rounded-xl overflow-hidden border border-white/5 img-portrait"><img src="https://picsum.photos/seed/school2/500/667.jpg" class="w-full h-full object-cover" alt="2"></div>
-                    <div class="rounded-xl overflow-hidden border border-white/5 img-portrait hidden sm:block"><img src="https://picsum.photos/seed/school3/500/667.jpg" class="w-full h-full object-cover" alt="3"></div>
-                    <div class="rounded-xl overflow-hidden border border-white/5 img-portrait"><img src="https://picsum.photos/seed/school4/500/667.jpg" class="w-full h-full object-cover" alt="4"></div>
-                    <div class="rounded-xl overflow-hidden border border-white/5 img-portrait"><img src="https://picsum.photos/seed/school5/500/667.jpg" class="w-full h-full object-cover" alt="5"></div>
-                    <div class="rounded-xl overflow-hidden border border-white/5 img-portrait hidden sm:block"><img src="https://picsum.photos/seed/school6/500/667.jpg" class="w-full h-full object-cover" alt="6"></div>
-                </div>
-            </div></section>
-        </div>
-        <div class="sub-content" id="sub-galeri-prestasi">
-            <section class="py-6 sm:py-10"><div class="max-w-7xl mx-auto px-4 sm:px-6">
-                <div class="space-y-2">
-                    <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-3"><span class="text-xl">🥇</span><div class="flex-1 min-w-0"><div class="text-xs font-bold truncate">Lomba Jaringan Provinsi</div><div class="text-[10px] text-neutral-500">TKJ - 2024</div></div></div>
-                    <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-3"><span class="text-xl">🥈</span><div class="flex-1 min-w-0"><div class="text-xs font-bold truncate">Desain Poster Nasional</div><div class="text-[10px] text-neutral-500">DKV - 2024</div></div></div>
-                    <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-3"><span class="text-xl">🥇</span><div class="flex-1 min-w-0"><div class="text-xs font-bold truncate">Lomba Masak Nusantara</div><div class="text-[10px] text-neutral-500">BOGA - 2023</div></div></div>
-                    <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-3"><span class="text-xl">🥉</span><div class="flex-1 min-w-0"><div class="text-xs font-bold truncate">Olimpiade Akuntansi</div><div class="text-[10px] text-neutral-500">AKL - 2024</div></div></div>
-                    <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-3"><span class="text-xl">🥇</span><div class="flex-1 min-w-0"><div class="text-xs font-bold truncate">PMR Wira Kota</div><div class="text-[10px] text-neutral-500">PMR - 2024</div></div></div>
-                </div>
-            </div></section>
-        </div>
-        <div class="sub-content" id="sub-galeri-fasilitas">
-            <section class="py-6 sm:py-10"><div class="max-w-7xl mx-auto px-4 sm:px-6">
-                <div class="space-y-4">
-                    <div class="rounded-2xl overflow-hidden border border-white/5 max-w-sm mx-auto sm:mx-0"><img src="https://picsum.photos/seed/labkomputer/600/800.jpg" class="w-full h-auto object-cover img-portrait" alt="Lab"><div class="p-4 bg-white/[0.02]"><h4 class="text-sm font-bold mb-0.5">Lab Komputer</h4><p class="text-[10px] text-neutral-500">3 ruang, 120 PC terkoneksi internet</p></div></div>
-                    <div class="rounded-2xl overflow-hidden border border-white/5 max-w-sm mx-auto sm:mx-0"><img src="https://picsum.photos/seed/labmasak/600/800.jpg" class="w-full h-auto object-cover img-portrait" alt="Dapur"><div class="p-4 bg-white/[0.02]"><h4 class="text-sm font-bold mb-0.5">Kitchen Lab</h4><p class="text-[10px] text-neutral-500">Peralatan standar hotel</p></div></div>
-                    <div class="rounded-2xl overflow-hidden border border-white/5 max-w-sm mx-auto sm:mx-0"><img src="https://picsum.photos/seed/perpustakaan/600/800.jpg" class="w-full h-auto object-cover img-portrait" alt="Perpus"><div class="p-4 bg-white/[0.02]"><h4 class="text-sm font-bold mb-0.5">Perpustakaan Digital</h4><p class="text-[10px] text-neutral-500">10.000+ buku & e-library</p></div></div>
-                    <div class="rounded-2xl overflow-hidden border border-white/5 max-w-sm mx-auto sm:mx-0"><img src="https://picsum.photos/seed/musholla2024/600/800.jpg" class="w-full h-auto object-cover img-portrait" alt="Musholla"><div class="p-4 bg-white/[0.02]"><h4 class="text-sm font-bold mb-0.5">Musholla Al-Ikhlas</h4><p class="text-[10px] text-neutral-500">Kapasitas 500 jamaah</p></div></div>
-                </div>
-            </div></section>
-        </div>
-        <div class="sub-content" id="sub-galeri-video">
-            <section class="py-6 sm:py-10"><div class="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-                <div class="rounded-2xl overflow-hidden border border-white/5 bg-white/[0.02] flex items-center justify-center relative max-w-sm mx-auto">
-                    <img src="https://picsum.photos/seed/videoprofile/600/800.jpg" class="w-full h-auto object-cover opacity-50 img-portrait" alt="Video">
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <button onclick="showToast('Video profil akan segera diunggah!')" class="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30 active:scale-95 transition-transform"><iconify-icon icon="lucide:play" width="28" class="text-white ml-1"></iconify-icon></button>
-                    </div>
-                </div>
-                <p class="text-neutral-500 text-xs mt-3">Video Profil SMK Islamiyah Ciputat 2024</p>
-            </div></section>
-        </div>
+        <section class="hero-gradient pt-14 grid-bg pb-8"><div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 text-center"><span class="text-[10px] font-bold tracking-[0.2em] text-blue-400 uppercase mb-3 block">Dokumentasi</span><h1 class="text-3xl sm:text-4xl md:text-6xl font-black tracking-tighter uppercase mb-4">Ga<span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">leri</span></h1></div></section>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3"><div class="sub-scroll border-b border-white/5 pb-3">
+            <button class="sub-btn active px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="foto" data-parent="galeri">Foto</button>
+            <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="prestasi" data-parent="galeri">Prestasi</button>
+            <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="fasilitas" data-parent="galeri">Fasilitas</button>
+            <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="video" data-parent="galeri">Video</button>
+        </div></div>
+        <div class="sub-content active" id="sub-galeri-foto"><section class="py-6 sm:py-10"><div class="max-w-7xl mx-auto px-4 sm:px-6"><div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3"><div class="rounded-xl overflow-hidden border border-white/5 img-portrait"><img src="https://picsum.photos/seed/school1/500/667.jpg" class="w-full h-full object-cover" alt="1"></div><div class="rounded-xl overflow-hidden border border-white/5 img-portrait"><img src="https://picsum.photos/seed/school2/500/667.jpg" class="w-full h-full object-cover" alt="2"></div><div class="rounded-xl overflow-hidden border border-white/5 img-portrait hidden sm:block"><img src="https://picsum.photos/seed/school3/500/667.jpg" class="w-full h-full object-cover" alt="3"></div><div class="rounded-xl overflow-hidden border border-white/5 img-portrait"><img src="https://picsum.photos/seed/school4/500/667.jpg" class="w-full h-full object-cover" alt="4"></div><div class="rounded-xl overflow-hidden border border-white/5 img-portrait"><img src="https://picsum.photos/seed/school5/500/667.jpg" class="w-full h-full object-cover" alt="5"></div><div class="rounded-xl overflow-hidden border border-white/5 img-portrait hidden sm:block"><img src="https://picsum.photos/seed/school6/500/667.jpg" class="w-full h-full object-cover" alt="6"></div></div></div></section></div>
+        <div class="sub-content" id="sub-galeri-prestasi"><section class="py-6 sm:py-10"><div class="max-w-7xl mx-auto px-4 sm:px-6"><div class="space-y-2"><div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-3"><span class="text-xl">🥇</span><div class="flex-1 min-w-0"><div class="text-xs font-bold truncate">Lomba Jaringan Provinsi</div><div class="text-[10px] text-neutral-500">TKJ - 2024</div></div></div><div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-3"><span class="text-xl">🥈</span><div class="flex-1 min-w-0"><div class="text-xs font-bold truncate">Desain Poster Nasional</div><div class="text-[10px] text-neutral-500">DKV - 2024</div></div></div><div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-3"><span class="text-xl">🥇</span><div class="flex-1 min-w-0"><div class="text-xs font-bold truncate">Lomba Masak Nusantara</div><div class="text-[10px] text-neutral-500">BOGA - 2023</div></div></div><div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-3"><span class="text-xl">🥉</span><div class="flex-1 min-w-0"><div class="text-xs font-bold truncate">Olimpiade Akuntansi</div><div class="text-[10px] text-neutral-500">AKL - 2024</div></div></div><div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-3"><span class="text-xl">🥇</span><div class="flex-1 min-w-0"><div class="text-xs font-bold truncate">PMR Wira Kota</div><div class="text-[10px] text-neutral-500">PMR - 2024</div></div></div></div></div></section></div>
+        <div class="sub-content" id="sub-galeri-fasilitas"><section class="py-6 sm:py-10"><div class="max-w-7xl mx-auto px-4 sm:px-6"><div class="space-y-4"><div class="rounded-2xl overflow-hidden border border-white/5 max-w-sm mx-auto sm:mx-0"><img src="https://picsum.photos/seed/labkomputer/600/800.jpg" class="w-full h-auto object-cover img-portrait" alt="Lab"><div class="p-4 bg-white/[0.02]"><h4 class="text-sm font-bold mb-0.5">Lab Komputer</h4><p class="text-[10px] text-neutral-500">3 ruang, 120 PC terkoneksi internet</p></div></div><div class="rounded-2xl overflow-hidden border border-white/5 max-w-sm mx-auto sm:mx-0"><img src="https://picsum.photos/seed/labmasak/600/800.jpg" class="w-full h-auto object-cover img-portrait" alt="Dapur"><div class="p-4 bg-white/[0.02]"><h4 class="text-sm font-bold mb-0.5">Kitchen Lab</h4><p class="text-[10px] text-neutral-500">Peralatan standar hotel</p></div></div><div class="rounded-2xl overflow-hidden border border-white/5 max-w-sm mx-auto sm:mx-0"><img src="https://picsum.photos/seed/perpustakaan/600/800.jpg" class="w-full h-auto object-cover img-portrait" alt="Perpus"><div class="p-4 bg-white/[0.02]"><h4 class="text-sm font-bold mb-0.5">Perpustakaan Digital</h4><p class="text-[10px] text-neutral-500">10.000+ buku & e-library</p></div></div><div class="rounded-2xl overflow-hidden border border-white/5 max-w-sm mx-auto sm:mx-0"><img src="https://picsum.photos/seed/musholla2024/600/800.jpg" class="w-full h-auto object-cover img-portrait" alt="Musholla"><div class="p-4 bg-white/[0.02]"><h4 class="text-sm font-bold mb-0.5">Musholla Al-Ikhlas</h4><p class="text-[10px] text-neutral-500">Kapasitas 500 jamaah</p></div></div></div></div></section></div>
+        <div class="sub-content" id="sub-galeri-video"><section class="py-6 sm:py-10"><div class="max-w-3xl mx-auto px-4 sm:px-6 text-center"><div class="rounded-2xl overflow-hidden border border-white/5 bg-white/[0.02] flex items-center justify-center relative max-w-sm mx-auto"><img src="https://picsum.photos/seed/videoprofile/600/800.jpg" class="w-full h-auto object-cover opacity-50 img-portrait" alt="Video"><div class="absolute inset-0 flex items-center justify-center"><button onclick="showToast('Video profil akan segera diunggah!')" class="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30 active:scale-95 transition-transform"><iconify-icon icon="lucide:play" width="28" class="text-white ml-1"></iconify-icon></button></div></div><p class="text-neutral-500 text-xs mt-3">Video Profil SMK Islamiyah Ciputat 2024</p></div></section></div>
     </div>
 
     <!-- ==================== KONTAK ==================== -->
     <div class="tab-content" id="tab-kontak">
-        <section class="hero-gradient pt-14 grid-bg pb-8">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 text-center">
-                <span class="text-[10px] font-bold tracking-[0.2em] text-blue-400 uppercase mb-3 block">Hubungi Kami</span>
-                <h1 class="text-3xl sm:text-4xl md:text-6xl font-black tracking-tighter uppercase mb-4">Kon<span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">tak</span></h1>
-            </div>
-        </section>
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3">
-            <div class="sub-scroll border-b border-white/5 pb-3">
-                <button class="sub-btn active px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="alamat" data-parent="kontak">Peta</button>
-                <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="telepon" data-parent="kontak">Telepon</button>
-                <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="sosmed" data-parent="kontak">Sosmed</button>
-                <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="formulir" data-parent="kontak">Kirim Pesan</button>
-            </div>
-        </div>
-
-        <div class="sub-content active" id="sub-kontak-alamat">
-            <section class="py-6 sm:py-10"><div class="max-w-7xl mx-auto px-4 sm:px-6">
-                <div class="p-5 rounded-2xl bg-white/[0.02] border border-white/5 mb-5">
-                    <div class="flex items-start gap-3 mb-4"><iconify-icon icon="lucide:map-pin" width="18" class="text-blue-400 shrink-0 mt-0.5"></iconify-icon><div><div class="text-xs font-bold mb-0.5">Alamat</div><p class="text-xs text-neutral-400 font-light leading-relaxed">Jl. Ir. H. Juanda No. 1, Ciputat, Kec. Ciputat Tim., Kota Tangerang Selatan, Banten 15412</p></div></div>
-                    <div class="flex items-start gap-3"><iconify-icon icon="lucide:clock" width="18" class="text-blue-400 shrink-0 mt-0.5"></iconify-icon><div><div class="text-xs font-bold mb-0.5">Jam Operasional</div><p class="text-xs text-neutral-400 font-light">Sen-Jum: 07.00-16.00 | Sabtu: 07.00-12.00</p></div></div>
-                </div>
-                <div class="rounded-2xl overflow-hidden border border-white/5 h-56 sm:h-72">
-                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3965.6!2d106.74!3d-6.31!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sSMK+Islamiyah+Ciputat!5e0!3m2!1sid!2sid!4v1" width="100%" height="100%" style="border:0;filter:invert(0.9) hue-rotate(180deg) brightness(0.8) contrast(1.2);" allowfullscreen="" loading="lazy"></iframe>
-                </div>
-            </div></section>
-        </div>
-        <div class="sub-content" id="sub-kontak-telepon">
-            <section class="py-6 sm:py-10"><div class="max-w-3xl mx-auto px-4 sm:px-6">
-                <div class="space-y-3">
-                    <a href="tel:0217490944" class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center gap-4 active:bg-white/[0.04] transition-colors"><div class="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0"><iconify-icon icon="lucide:phone" width="20" class="text-blue-400"></iconify-icon></div><div><div class="text-[10px] text-neutral-500 font-medium uppercase tracking-wider">Telepon</div><div class="text-sm font-semibold">(021) 749-0944</div></div></a>
-                    <a href="https://wa.me/6281280000000" class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center gap-4 active:bg-white/[0.04] transition-colors"><div class="w-11 h-11 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center shrink-0"><iconify-icon icon="lucide:message-circle" width="20" class="text-green-400"></iconify-icon></div><div><div class="text-[10px] text-neutral-500 font-medium uppercase tracking-wider">WhatsApp</div><div class="text-sm font-semibold">0812-8xxx-xxxx</div></div></a>
-                    <a href="mailto:info@smkislamiyahciputat.sch.id" class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center gap-4 active:bg-white/[0.04] transition-colors"><div class="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0"><iconify-icon icon="lucide:mail" width="20" class="text-blue-400"></iconify-icon></div><div><div class="text-[10px] text-neutral-500 font-medium uppercase tracking-wider">Email</div><div class="text-sm font-semibold">info@smkislamiyahciputat.sch.id</div></div></a>
-                </div>
-            </div></section>
-        </div>
-        <div class="sub-content" id="sub-kontak-sosmed">
-            <section class="py-6 sm:py-10"><div class="max-w-3xl mx-auto px-4 sm:px-6">
-                <div class="grid grid-cols-2 gap-3">
-                    <a href="#" class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center gap-3 active:bg-white/[0.04] transition-colors"><div class="w-10 h-10 rounded-xl bg-blue-600/10 flex items-center justify-center"><iconify-icon icon="lucide:facebook" width="18" class="text-blue-400"></iconify-icon></div><div><div class="text-xs font-semibold">Facebook</div><div class="text-[10px] text-neutral-500">@smkislamiyahciputat</div></div></a>
-                    <a href="#" class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center gap-3 active:bg-white/[0.04] transition-colors"><div class="w-10 h-10 rounded-xl bg-pink-600/10 flex items-center justify-center"><iconify-icon icon="lucide:instagram" width="18" class="text-pink-400"></iconify-icon></div><div><div class="text-xs font-semibold">Instagram</div><div class="text-[10px] text-neutral-500">@smk_islamiyah_cpt</div></div></a>
-                    <a href="#" class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center gap-3 active:bg-white/[0.04] transition-colors"><div class="w-10 h-10 rounded-xl bg-red-600/10 flex items-center justify-center"><iconify-icon icon="lucide:youtube" width="18" class="text-red-400"></iconify-icon></div><div><div class="text-xs font-semibold">YouTube</div><div class="text-[10px] text-neutral-500">SMK Islamiyah</div></div></a>
-                    <a href="#" class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center gap-3 active:bg-white/[0.04] transition-colors"><div class="w-10 h-10 rounded-xl bg-green-600/10 flex items-center justify-center"><iconify-icon icon="lucide:message-circle" width="18" class="text-green-400"></iconify-icon></div><div><div class="text-xs font-semibold">WhatsApp</div><div class="text-[10px] text-neutral-500">Grup PPDB</div></div></a>
-                </div>
-            </div></section>
-        </div>
-        <div class="sub-content" id="sub-kontak-formulir">
-            <section class="py-6 sm:py-10"><div class="max-w-lg mx-auto px-4 sm:px-6">
-                <h2 class="text-xl font-bold mb-5">Kirim <span class="text-blue-400">Pesan</span></h2>
-                <form onsubmit="handleSubmit(event)" class="space-y-4">
-                    <div><label class="block text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-1.5">Nama</label><input type="text" required class="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white text-sm focus:outline-none focus:border-blue-500/50 placeholder:text-neutral-600" placeholder="Nama lengkap"></div>
-                    <div><label class="block text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-1.5">Email</label><input type="email" required class="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white text-sm focus:outline-none focus:border-blue-500/50 placeholder:text-neutral-600" placeholder="email@contoh.com"></div>
-                    <div><label class="block text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-1.5">Subjek</label><input type="text" required class="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white text-sm focus:outline-none focus:border-blue-500/50 placeholder:text-neutral-600" placeholder="Perihal pesan"></div>
-                    <div><label class="block text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-1.5">Pesan</label><textarea rows="4" required class="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white text-sm focus:outline-none focus:border-blue-500/50 placeholder:text-neutral-600 resize-none" placeholder="Tulis pesan..."></textarea></div>
-                    <button type="submit" class="w-full py-3.5 bg-blue-600 active:bg-blue-500 text-white text-[11px] font-bold tracking-widest uppercase rounded-lg transition-all">Kirim Pesan</button>
-                </form>
-            </div></section>
-        </div>
+        <section class="hero-gradient pt-14 grid-bg pb-8"><div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 text-center"><span class="text-[10px] font-bold tracking-[0.2em] text-blue-400 uppercase mb-3 block">Hubungi Kami</span><h1 class="text-3xl sm:text-4xl md:text-6xl font-black tracking-tighter uppercase mb-4">Kon<span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">tak</span></h1></div></section>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3"><div class="sub-scroll border-b border-white/5 pb-3">
+            <button class="sub-btn active px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="alamat" data-parent="kontak">Peta</button>
+            <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="telepon" data-parent="kontak">Telepon</button>
+            <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="sosmed" data-parent="kontak">Sosmed</button>
+            <button class="sub-btn px-4 py-2 text-[11px] font-semibold tracking-wider uppercase border border-transparent rounded-lg text-neutral-400" data-sub="formulir" data-parent="kontak">Kirim Pesan</button>
+        </div></div>
+        <div class="sub-content active" id="sub-kontak-alamat"><section class="py-6 sm:py-10"><div class="max-w-7xl mx-auto px-4 sm:px-6"><div class="p-5 rounded-2xl bg-white/[0.02] border border-white/5 mb-5"><div class="flex items-start gap-3 mb-4"><iconify-icon icon="lucide:map-pin" width="18" class="text-blue-400 shrink-0 mt-0.5"></iconify-icon><div><div class="text-xs font-bold mb-0.5">Alamat</div><p class="text-xs text-neutral-400 font-light leading-relaxed">Jl. Ir. H. Juanda No. 1, Ciputat, Kec. Ciputat Tim., Kota Tangerang Selatan, Banten 15412</p></div></div><div class="flex items-start gap-3"><iconify-icon icon="lucide:clock" width="18" class="text-blue-400 shrink-0 mt-0.5"></iconify-icon><div><div class="text-xs font-bold mb-0.5">Jam Operasional</div><p class="text-xs text-neutral-400 font-light">Sen-Jum: 07.00-16.00 | Sabtu: 07.00-12.00</p></div></div></div><div class="rounded-2xl overflow-hidden border border-white/5 h-56 sm:h-72"><iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3965.6!2d106.74!3d-6.31!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sSMK+Islamiyah+Ciputat!5e0!3m2!1sid!2sid!4v1" width="100%" height="100%" style="border:0;filter:invert(0.9) hue-rotate(180deg) brightness(0.8) contrast(1.2);" allowfullscreen="" loading="lazy"></iframe></div></div></section></div>
+        <div class="sub-content" id="sub-kontak-telepon"><section class="py-6 sm:py-10"><div class="max-w-3xl mx-auto px-4 sm:px-6"><div class="space-y-3"><a href="tel:0217490944" class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center gap-4 active:bg-white/[0.04] transition-colors"><div class="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0"><iconify-icon icon="lucide:phone" width="20" class="text-blue-400"></iconify-icon></div><div><div class="text-[10px] text-neutral-500 font-medium uppercase tracking-wider">Telepon</div><div class="text-sm font-semibold">(021) 749-0944</div></div></a><a href="https://wa.me/6281280000000" class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center gap-4 active:bg-white/[0.04] transition-colors"><div class="w-11 h-11 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center shrink-0"><iconify-icon icon="lucide:message-circle" width="20" class="text-green-400"></iconify-icon></div><div><div class="text-[10px] text-neutral-500 font-medium uppercase tracking-wider">WhatsApp</div><div class="text-sm font-semibold">0812-8xxx-xxxx</div></div></a><a href="mailto:info@smkislamiyahciputat.sch.id" class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center gap-4 active:bg-white/[0.04] transition-colors"><div class="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0"><iconify-icon icon="lucide:mail" width="20" class="text-blue-400"></iconify-icon></div><div><div class="text-[10px] text-neutral-500 font-medium uppercase tracking-wider">Email</div><div class="text-sm font-semibold">info@smkislamiyahciputat.sch.id</div></div></a></div></div></section></div>
+        <div class="sub-content" id="sub-kontak-sosmed"><section class="py-6 sm:py-10"><div class="max-w-3xl mx-auto px-4 sm:px-6"><div class="grid grid-cols-2 gap-3"><a href="#" class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center gap-3 active:bg-white/[0.04] transition-colors"><div class="w-10 h-10 rounded-xl bg-blue-600/10 flex items-center justify-center"><iconify-icon icon="lucide:facebook" width="18" class="text-blue-400"></iconify-icon></div><div><div class="text-xs font-semibold">Facebook</div><div class="text-[10px] text-neutral-500">@smkislamiyahciputat</div></div></a><a href="#" class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center gap-3 active:bg-white/[0.04] transition-colors"><div class="w-10 h-10 rounded-xl bg-pink-600/10 flex items-center justify-center"><iconify-icon icon="lucide:instagram" width="18" class="text-pink-400"></iconify-icon></div><div><div class="text-xs font-semibold">Instagram</div><div class="text-[10px] text-neutral-500">@smk_islamiyah_cpt</div></div></a><a href="#" class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center gap-3 active:bg-white/[0.04] transition-colors"><div class="w-10 h-10 rounded-xl bg-red-600/10 flex items-center justify-center"><iconify-icon icon="lucide:youtube" width="18" class="text-red-400"></iconify-icon></div><div><div class="text-xs font-semibold">YouTube</div><div class="text-[10px] text-neutral-500">SMK Islamiyah</div></div></a><a href="#" class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center gap-3 active:bg-white/[0.04] transition-colors"><div class="w-10 h-10 rounded-xl bg-green-600/10 flex items-center justify-center"><iconify-icon icon="lucide:message-circle" width="18" class="text-green-400"></iconify-icon></div><div><div class="text-xs font-semibold">WhatsApp</div><div class="text-[10px] text-neutral-500">Grup PPDB</div></div></a></div></div></section></div>
+        <div class="sub-content" id="sub-kontak-formulir"><section class="py-6 sm:py-10"><div class="max-w-lg mx-auto px-4 sm:px-6"><h2 class="text-xl font-bold mb-5">Kirim <span class="text-blue-400">Pesan</span></h2><form onsubmit="handleSubmit(event)" class="space-y-4"><div><label class="block text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-1.5">Nama</label><input type="text" required class="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white text-sm focus:outline-none focus:border-blue-500/50 placeholder:text-neutral-600" placeholder="Nama lengkap"></div><div><label class="block text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-1.5">Email</label><input type="email" required class="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white text-sm focus:outline-none focus:border-blue-500/50 placeholder:text-neutral-600" placeholder="email@contoh.com"></div><div><label class="block text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-1.5">Subjek</label><input type="text" required class="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white text-sm focus:outline-none focus:border-blue-500/50 placeholder:text-neutral-600" placeholder="Perihal pesan"></div><div><label class="block text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-1.5">Pesan</label><textarea rows="4" required class="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white text-sm focus:outline-none focus:border-blue-500/50 placeholder:text-neutral-600 resize-none" placeholder="Tulis pesan..."></textarea></div><button type="submit" class="w-full py-3.5 bg-blue-600 active:bg-blue-500 text-white text-[11px] font-bold tracking-widest uppercase rounded-lg transition-all">Kirim Pesan</button></form></div></section></div>
     </div>
 
     <!-- FOOTER -->
@@ -727,79 +654,25 @@
             if (target) target.classList.add('active');
             document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); if (b.dataset.tab === tabName) b.classList.add('active'); });
             document.querySelectorAll('.bottom-tab').forEach(b => {
-                const icon = b.querySelector('.tab-icon');
-                const label = b.querySelector('.tab-label');
-                if (b.dataset.tab === tabName) {
-                    b.classList.add('active');
-                    if(icon) icon.className = icon.className.replace('text-neutral-500','text-blue-400');
-                    if(label) label.className = label.className.replace('text-neutral-500','text-blue-400');
-                } else {
-                    b.classList.remove('active');
-                    if(icon) icon.className = icon.className.replace('text-blue-400','text-neutral-500');
-                    if(label) label.className = label.className.replace('text-blue-400','text-neutral-500');
-                }
+                const icon = b.querySelector('.tab-icon'), label = b.querySelector('.tab-label');
+                if (b.dataset.tab === tabName) { b.classList.add('active'); if(icon) icon.className = icon.className.replace('text-neutral-500','text-blue-400'); if(label) label.className = label.className.replace('text-neutral-500','text-blue-400'); }
+                else { b.classList.remove('active'); if(icon) icon.className = icon.className.replace('text-blue-400','text-neutral-500'); if(label) label.className = label.className.replace('text-blue-400','text-neutral-500'); }
             });
             document.querySelectorAll('.drawer-tab').forEach(b => { b.classList.remove('text-blue-400','bg-blue-500/5'); if (b.dataset.tab === tabName) b.classList.add('text-blue-400','bg-blue-500/5'); });
             const firstSub = target?.querySelector('.sub-btn');
-            if (firstSub) {
-                target.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
-                target.querySelectorAll('.sub-content').forEach(s => s.classList.remove('active'));
-                firstSub.classList.add('active');
-                const st = document.getElementById('sub-' + tabName + '-' + firstSub.dataset.sub);
-                if (st) st.classList.add('active');
-            }
+            if (firstSub) { target.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active')); target.querySelectorAll('.sub-content').forEach(s => s.classList.remove('active')); firstSub.classList.add('active'); const st = document.getElementById('sub-' + tabName + '-' + firstSub.dataset.sub); if (st) st.classList.add('active'); }
             if (tabName === 'jurusan') highlightJurusanQuick(firstSub?.dataset.sub || 'tkj');
-            closeDrawer();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            closeDrawer(); window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-
-        function activateSub(parent, sub) {
-            const parentTab = document.getElementById('tab-' + parent);
-            if (!parentTab) return;
-            parentTab.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
-            parentTab.querySelectorAll('.sub-content').forEach(s => s.classList.remove('active'));
-            const st = document.getElementById('sub-' + parent + '-' + sub);
-            if (st) st.classList.add('active');
-            if (parent === 'jurusan') highlightJurusanQuick(sub);
-        }
-
-        function highlightJurusanQuick(sub) {
-            const names = ['tkj','dkv','boga','akl','bdp','otkp'];
-            document.querySelectorAll('.jurusan-quick').forEach((el, i) => {
-                if (names[i] === sub) { el.classList.add('border-blue-500/20'); el.classList.remove('border-white/5'); }
-                else { el.classList.remove('border-blue-500/20'); el.classList.add('border-white/5'); }
-            });
-        }
-
-        document.addEventListener('click', e => {
-            const subBtn = e.target.closest('.sub-btn');
-            if (!subBtn) return;
-            const parent = subBtn.dataset.parent, sub = subBtn.dataset.sub;
-            const parentTab = document.getElementById('tab-' + parent);
-            if (!parentTab) return;
-            parentTab.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
-            parentTab.querySelectorAll('.sub-content').forEach(s => s.classList.remove('active'));
-            subBtn.classList.add('active');
-            const st = document.getElementById('sub-' + parent + '-' + sub);
-            if (st) st.classList.add('active');
-            if (parent === 'jurusan') highlightJurusanQuick(sub);
-        });
-
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
-        document.querySelectorAll('.bottom-tab').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
-        document.querySelectorAll('.drawer-tab').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
-
+        function activateSub(parent, sub) { const pt = document.getElementById('tab-' + parent); if (!pt) return; pt.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active')); pt.querySelectorAll('.sub-content').forEach(s => s.classList.remove('active')); const st = document.getElementById('sub-' + parent + '-' + sub); if (st) st.classList.add('active'); if (parent === 'jurusan') highlightJurusanQuick(sub); }
+        function highlightJurusanQuick(sub) { const n = ['tkj','dkv','boga','akl','bdp','otkp']; document.querySelectorAll('.jurusan-quick').forEach((el, i) => { if (n[i] === sub) { el.classList.add('border-blue-500/20'); el.classList.remove('border-white/5'); } else { el.classList.remove('border-blue-500/20'); el.classList.add('border-white/5'); } }); }
+        document.addEventListener('click', e => { const sb = e.target.closest('.sub-btn'); if (!sb) return; const p = sb.dataset.parent, s = sb.dataset.sub; const pt = document.getElementById('tab-' + p); if (!pt) return; pt.querySelectorAll('.sub-btn').forEach(x => x.classList.remove('active')); pt.querySelectorAll('.sub-content').forEach(x => x.classList.remove('active')); sb.classList.add('active'); const st = document.getElementById('sub-' + p + '-' + s); if (st) st.classList.add('active'); if (p === 'jurusan') highlightJurusanQuick(s); });
+        document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+        document.querySelectorAll('.bottom-tab').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+        document.querySelectorAll('.drawer-tab').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
         function toggleDrawer() { document.getElementById('mobileDrawer').classList.toggle('open'); document.getElementById('drawerOverlay').classList.toggle('open'); }
         function closeDrawer() { document.getElementById('mobileDrawer').classList.remove('open'); document.getElementById('drawerOverlay').classList.remove('open'); }
-
-        function toggleFaq(btn) {
-            const answer = btn.nextElementSibling, icon = btn.querySelector('iconify-icon');
-            const isHidden = answer.classList.contains('hidden');
-            document.querySelectorAll('.faq-answer').forEach(a => a.classList.add('hidden'));
-            if (isHidden) { answer.classList.remove('hidden'); icon.style.transform = 'rotate(180deg)'; }
-            else { icon.style.transform = ''; }
-        }
-
+        function toggleFaq(btn) { const a = btn.nextElementSibling, i = btn.querySelector('iconify-icon'), h = a.classList.contains('hidden'); document.querySelectorAll('.faq-answer').forEach(x => x.classList.add('hidden')); if (h) { a.classList.remove('hidden'); i.style.transform = 'rotate(180deg)'; } else { i.style.transform = ''; } }
         function handleSubmit(e) { e.preventDefault(); showToast('Pesan berhasil dikirim! Kami akan merespons segera.'); e.target.reset(); }
         function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3500); }
     </script>
